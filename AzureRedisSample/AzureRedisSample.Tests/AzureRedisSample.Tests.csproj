@@ -95,6 +95,9 @@
     <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\..\..\RedisKey">
+      <Link>RedisKey</Link>
+    </EmbeddedResource>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
