@@ -73,6 +73,40 @@ namespace AzureRedisSample.Tests
             Assert.Equal((RedisValue)"Fourth", resultArray[3].Element);
         }
 
+        [Fact]
+        public void BiggerSortedList()
+        {
+            RedisKey key = "SortedList.Key";
+
+            log.Info("==============Starting Test BiggerSortedList==============");
+            var s = Stopwatch.StartNew();
+            log.Trace("Purging DB {0}", s.ElapsedMilliseconds);
+            Connection.KeyDelete(key);
+            log.Trace("Purging DB -> Done {0}", s.ElapsedMilliseconds);
+
+            Random r = new Random(123);
+            var values = Enumerable.Range(1, 10000).Select(i => new Tuple<string, double>(i.ToString(), r.NextDouble()));
+
+            log.Trace("Inserting Keys {0}", s.ElapsedMilliseconds);
+            var promises = values.Select(value => Connection.SortedSetAddAsync(key, value.Item1, value.Item2)).Select(t => (Task)t);
+
+            Task.WaitAll(promises.ToArray());
+            log.Trace("Inserting Keys -> Done {0}", s.ElapsedMilliseconds);
+
+            log.Trace("Getting Keys {0}", s.ElapsedMilliseconds);
+            var result = Connection.SortedSetScan(key);
+
+            Assert.NotNull(result);
+            log.Trace("Getting Keys -> Have Enumerator {0}", s.ElapsedMilliseconds);
+
+            int numResults = 20;
+            var resultArray = result.Take(numResults).ToArray();
+            log.Trace("Getting Keys -> Done {0}", s.ElapsedMilliseconds);
+
+            Assert.Equal(numResults, resultArray.Length);
+        }
+
+
         private static IDatabase Connect()
         {
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("AzureRedisSample.Tests.RedisKey"))
