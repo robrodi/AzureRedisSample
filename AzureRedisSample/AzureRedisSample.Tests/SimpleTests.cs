@@ -54,7 +54,6 @@ namespace AzureRedisSample.Tests
 
             log.Trace("Inserting Keys {0}ms", s.ElapsedMilliseconds);
             var promises = values.Select(value => Connection.SortedSetAddAsync(key, value.Item1, value.Item2)).Select(t => (Task) t);
-
             Task.WaitAll(promises.ToArray());
             log.Trace("Inserting Keys -> Done {0}ms", s.ElapsedMilliseconds);
 
